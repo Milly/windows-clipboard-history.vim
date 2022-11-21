@@ -81,13 +81,15 @@ export class Source extends BaseSource<Params, UserData> {
       sourceOptions: { maxItems },
     } = args;
 
-    const vimColumns = await globalOptions.get(denops, "columns", 9999);
-    const abbrWidth = maxAbbrWidth > 0
-      ? Math.min(maxAbbrWidth, vimColumns)
-      : vimColumns;
+    const [abbrWidth, recentHistory] = await Promise.all([
+      globalOptions.get(denops, "columns", 9999).then((vimColumns) =>
+        maxAbbrWidth > 0 ? Math.min(maxAbbrWidth, vimColumns) : vimColumns
+      ),
+      this.#clipboardHistory.getHistory().then((history) =>
+        history.slice(0, Math.max(1, maxItems))
+      ),
+    ]);
 
-    const recentHistory = (await this.#clipboardHistory.getHistory())
-      .slice(0, Math.max(1, maxItems));
     const items = generateItems(recentHistory, nextInput);
     await truncateItemsAbbr(denops, items, abbrWidth);
 
