@@ -81,7 +81,7 @@ maxAbbrWidth	(number)
 
 			 *windows-clipboard-history-ddc-param-ctrlCharHlGroup*
 ctrlCharHlGroup	(string)
-		Highlight group name for control-chars.
+		Highlight group name for unprintable chars.
 		If empty, highlight is disabled.
 
 		Default: "SpecialKey"
