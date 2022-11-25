@@ -86,8 +86,8 @@ export class Source extends BaseSource<Params, ActionData> {
     const now = Date.now();
     const items = recentHistory.map<Item<ActionData>>((item, index) => {
       const text = item.Text.replaceAll("\r\n", "\n");
-      const time = toDuration(now - item.Time);
-      const header = `${zeroPad(index, 2)}:${zeroPad(time, 3)}:`;
+      const duration = toDuration(now - item.Time);
+      const header = `${zeroPad(index, 2)}:${zeroPad(duration, 3)}:`;
       return {
         word: `${prefix}${header} ${text}`,
         action: {
@@ -111,9 +111,5 @@ export class Source extends BaseSource<Params, ActionData> {
 }
 
 function zeroPad(s: unknown, len: number): string {
-  let res = `${s}`;
-  if (len > 1 && res.length < len) {
-    res = new Array(len - res.length + 1).join("0") + res;
-  }
-  return res;
+  return `${s}`.padStart(len, "0");
 }
