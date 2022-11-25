@@ -32,3 +32,12 @@ function! windows_clipboard_history#ddc#_apply_insert() abort
     unlet s:insert_data
   endif
 endfunction
+
+function! windows_clipboard_history#_setcmdline(str, pos) abort
+  if exists('*setcmdline')
+    return setcmdline(a:str, a:pos)
+  endif
+  let str = substitute(escape(a:str, '"\'), '[[:cntrl:]]', "\<C-V>\\0", 'g')
+  let keys = printf("\<C-\>e[\"%s\",setcmdpos(%d)][0]\<CR>", str, a:pos)
+  return feedkeys(keys, 'in')
+endfunction
