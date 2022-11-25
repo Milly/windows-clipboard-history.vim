@@ -5,6 +5,10 @@
 
 Windows clipboard history source plugin for ddc.vim and ddu.vim.
 
+- Supports pasting of multiple lines.
+- ddc: Supports pasting in command line mode.
+- ddc: Supports control code highlighting. (Requires highlight capable UI)
+
 ## Required
 
 - Windows 10 Version 1809 (October 2018 Update)
