@@ -11,6 +11,7 @@ Examples		|windows-clipboard-history-examples|
 Params			|windows-clipboard-history-params|
   DDC Params		|windows-clipboard-history-ddc-params|
   DDU Params		|windows-clipboard-history-ddu-params|
+DDC Item Attributes	|windows-clipboard-history-ddc-item-attributes|
 
 
 ==============================================================================
@@ -102,6 +103,38 @@ prefix		(string)
 		Prefix for displayed items.
 
 		Default: ""
+
+
+==============================================================================
+DDC ITEM ATTRIBUTES	       *windows-clipboard-history-ddc-item-attributes*
+
+			   *windows-clipboard-history-ddc-item-attribute-abbr*
+abbr		(string)
+		Clipboard text value.
+		Control code is replaced with "^X" and highlighted with
+		|windows-clipboard-history-param-ctrlCharHlGroup|.
+		It is truncated by |windows-clipboard-history-param-maxAbbrWidth|.
+
+			   *windows-clipboard-history-ddc-item-attribute-info*
+info		(string)
+		Clipboard text value.
+		Control codes is contains as is.
+
+			   *windows-clipboard-history-ddc-item-attribute-kind*
+kind		(string)
+		Clipboard text type like |:registers|.
+		Type can be one of:
+		"c"	for |characterwise| text
+		"l"	for |linewise| text
+
+			   *windows-clipboard-history-ddc-item-attribute-menu*
+menu		(string)
+		Duration from when clipboard text was updated.
+
+			   *windows-clipboard-history-ddc-item-attribute-word*
+word		(string)
+		Clipboard text value.
+		Control code is replaced with "?".
 
 
 ==============================================================================
