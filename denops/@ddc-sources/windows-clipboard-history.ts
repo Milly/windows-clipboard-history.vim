@@ -11,12 +11,13 @@ import type {
 } from "https://deno.land/x/ddc_vim@v3.1.0/types.ts";
 import {
   mode,
+  printf,
   strlen,
 } from "https://deno.land/x/denops_std@v3.9.1/function/mod.ts";
 import type { Position } from "https://deno.land/x/denops_std@v3.9.1/function/types.ts";
 import type { Denops } from "https://deno.land/x/denops_std@v3.9.1/mod.ts";
 import { globalOptions } from "https://deno.land/x/denops_std@v3.9.1/variable/option.ts";
-import * as bulk from "../windows-clipboard-history/bulk.ts";
+import { defer } from "https://deno.land/x/denops_defer@v0.4.0/batch/defer.ts";
 import {
   ClipboardHistory,
   ClipboardHistoryItem,
@@ -212,14 +213,18 @@ export class Source extends BaseSource<Params, UserData> {
     items: Item[],
     abbrWidth: number,
   ): Promise<void> {
-    const truncated = await bulk.printf(
+    const format = `%.${abbrWidth}S`;
+    const truncated = await defer(
       denops,
-      `%.${abbrWidth}S`,
-      items.map(({ abbr }) => abbr),
+      (helper) =>
+        items.map((item) => ({
+          item,
+          abbr: printf(helper, format, item.abbr) as Promise<string>,
+        })),
     );
-    items.forEach((item, i) => {
-      item.abbr = truncated[i];
-    });
+    for (const { item, abbr } of truncated) {
+      item.abbr = abbr;
+    }
   }
 
   async #applyHighlights(
@@ -227,26 +232,19 @@ export class Source extends BaseSource<Params, UserData> {
     items: Item[],
     hlGroup: string,
   ): Promise<void> {
-    const itemSlices = items.map((item) => {
-      const { abbr, user_data } = item;
-      const text = user_data.text.slice(0, abbr.length);
-      const slices = text.split(this.#reUnprintableChar).slice(0, -1);
+    const itemSlices = await defer(denops, (helper) =>
+      items.map((item) => {
+        const { abbr, user_data } = item;
+        const text = user_data.text.slice(0, abbr.length);
+        const slices = text.split(this.#reUnprintableChar).slice(0, -1)
+          .map((slice) => ({
+            chars: slice.length,
+            bytes: strlen(helper, slice) as Promise<number>,
+          }));
       return { item, slices };
-    });
-    const sliceBytes = await bulk.strlen(
-      denops,
-      itemSlices.map(({ slices }) => slices).flat(),
-    );
-    let sliceBytesIndex = 0;
-    const itemSliceBytes = itemSlices.map(({ item, slices }) => ({
-      item,
-      slices: slices.map((slice) => ({
-        chars: slice.length,
-        bytes: sliceBytes[sliceBytesIndex++],
-      })),
     }));
 
-    for (const { item, slices } of itemSliceBytes) {
+    for (const { item, slices } of itemSlices) {
       if (slices.length > 0) {
         item.highlights = this.#generateHighlights(item.abbr, slices, hlGroup);
       }
