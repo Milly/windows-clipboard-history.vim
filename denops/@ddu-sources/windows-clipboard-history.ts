@@ -3,10 +3,14 @@ import type {
   OnInitArguments,
 } from "https://deno.land/x/ddu_vim@v1.13.0/base/source.ts";
 import { BaseSource } from "https://deno.land/x/ddu_vim@v1.13.0/types.ts";
-import type { Item } from "https://deno.land/x/ddu_vim@v1.13.0/types.ts";
+import type { Item as DduItem } from "https://deno.land/x/ddu_vim@v1.13.0/types.ts";
 import { strlen } from "https://deno.land/x/denops_std@v3.9.1/function/mod.ts";
-import { ClipboardHistory } from "../windows-clipboard-history/clipboard-history.ts";
+import {
+  ClipboardHistory,
+  ClipboardHistoryItem,
+} from "../windows-clipboard-history/clipboard-history.ts";
 import { toDuration } from "../windows-clipboard-history/time.ts";
+import { abortable } from "https://deno.land/std@0.160.0/async/abortable.ts";
 
 type Params = {
   /** PowerShell executable path. (default: "powershell.exe") */
@@ -26,6 +30,8 @@ type ActionData = {
   text: string;
   regType: "V" | "v";
 };
+
+type Item = DduItem<ActionData>;
 
 export class Source extends BaseSource<Params, ActionData> {
   kind = "word";
@@ -48,7 +54,7 @@ export class Source extends BaseSource<Params, ActionData> {
 
   override gather(
     args: GatherArguments<Params>,
-  ): ReadableStream<Item<ActionData>[]> {
+  ): ReadableStream<Item[]> {
     const abortController = new AbortController();
     const { signal } = abortController;
     return new ReadableStream({
@@ -58,7 +64,7 @@ export class Source extends BaseSource<Params, ActionData> {
   }
 
   async #startGatherStream(
-    controller: ReadableStreamDefaultController<Item<ActionData>[]>,
+    controller: ReadableStreamDefaultController<Item[]>,
     args: GatherArguments<Params>,
     signal: AbortSignal,
   ): Promise<void> {
@@ -71,23 +77,48 @@ export class Source extends BaseSource<Params, ActionData> {
       sourceOptions: { maxItems },
     } = args;
 
-    const [prefixWidth, recentHistory] = await Promise.all([
-      strlen(denops, prefix) as Promise<number>,
-      this.#clipboardHistory.getHistory().then((history) =>
-        history.slice(0, Math.max(1, maxItems))
-      ),
-    ]);
+    const gather = async () => {
+      const [prefixWidth, recentHistory] = await Promise.all([
+        strlen(denops, prefix) as Promise<number>,
+        this.#clipboardHistory!.getHistory().then(
+          (history) => history.slice(0, Math.max(1, maxItems)),
+        ),
+      ]);
 
-    if (signal.aborted) {
+      const items = this.#generateItems(
+        recentHistory,
+        prefixWidth,
+        prefix,
+        headerHlGroup,
+      );
+
+      controller.enqueue(items);
+    };
+
+    try {
+      await abortable(gather(), signal);
+    } catch (e: unknown) {
+      if ((e as Error)?.name !== "AbortError") {
+        console.error(e);
+      }
+    } finally {
       controller.close();
-      return;
     }
+  }
 
+  #generateItems(
+    history: ClipboardHistoryItem[],
+    prefixWidth: number,
+    prefix: string,
+    headerHlGroup: string,
+  ): Item[] {
     const now = Date.now();
-    const items = recentHistory.map<Item<ActionData>>((item, index) => {
+    const headerHlName = `source/${this.name}/header`;
+    return history.map((item, index): Item => {
       const text = item.Text.replaceAll("\r\n", "\n");
       const duration = toDuration(now - item.Time);
       const header = `${zeroPad(index, 2)}:${zeroPad(duration, 3)}:`;
+      this.name;
       return {
         word: `${prefix}${header} ${text}`,
         action: {
@@ -96,7 +127,7 @@ export class Source extends BaseSource<Params, ActionData> {
         },
         highlights: [
           {
-            name: "source/windows-clipboard-history/header",
+            name: headerHlName,
             hl_group: headerHlGroup,
             col: 1,
             width: prefixWidth + header.length,
@@ -104,9 +135,6 @@ export class Source extends BaseSource<Params, ActionData> {
         ],
       };
     });
-
-    controller.enqueue(items);
-    controller.close();
   }
 }
 
