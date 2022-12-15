@@ -1,6 +1,5 @@
-import { deadline } from "https://deno.land/std@0.165.0/async/deadline.ts";
-import { deferred } from "https://deno.land/std@0.165.0/async/deferred.ts";
-import * as path from "https://deno.land/std@0.165.0/path/mod.ts";
+import { deadline, deferred } from "https://deno.land/std@0.168.0/async/mod.ts";
+import * as path from "https://deno.land/std@0.168.0/path/mod.ts";
 import { JSONDecodeStream } from "./json.ts";
 
 const __dirname = path.dirname(path.fromFileUrl(import.meta.url));

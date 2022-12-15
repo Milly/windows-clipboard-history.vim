@@ -2,15 +2,17 @@ import type {
   GatherArguments,
   OnCompleteDoneArguments,
   OnInitArguments,
-} from "https://deno.land/x/ddc_vim@v3.1.0/base/source.ts";
-import { BaseSource } from "https://deno.land/x/ddc_vim@v3.1.0/types.ts";
-import type { Item as DdcItem } from "https://deno.land/x/ddc_vim@v3.1.0/types.ts";
-import type { Denops } from "https://deno.land/x/denops_std@v3.9.1/mod.ts";
-import { globalOptions } from "https://deno.land/x/denops_std@v3.9.1/variable/option.ts";
+} from "https://deno.land/x/ddc_vim@v3.3.0/base/source.ts";
+import {
+  BaseSource,
+  type Item as DdcItem,
+} from "https://deno.land/x/ddc_vim@v3.3.0/types.ts";
+import type { Denops } from "https://deno.land/x/denops_std@v3.12.0/mod.ts";
+import { globalOptions } from "https://deno.land/x/denops_std@v3.12.0/variable/option.ts";
 import {
   Unprintable,
   type UnprintableUserData,
-} from "https://deno.land/x/ddc_unprintable@v1.0.0/mod.ts";
+} from "https://deno.land/x/ddc_unprintable@v1.0.1/mod.ts";
 import {
   ClipboardHistory,
   ClipboardHistoryItem,
