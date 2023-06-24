@@ -1,18 +1,18 @@
+import { abortable } from "https://deno.land/std@0.192.0/async/abortable.ts";
 import type {
   GatherArguments,
   OnInitArguments,
-} from "https://deno.land/x/ddu_vim@v2.0.0/base/source.ts";
+} from "https://deno.land/x/ddu_vim@v3.2.7/base/source.ts";
 import {
   BaseSource,
   type Item as DduItem,
-} from "https://deno.land/x/ddu_vim@v2.0.0/types.ts";
-import { strlen } from "https://deno.land/x/denops_std@v3.12.0/function/mod.ts";
+} from "https://deno.land/x/ddu_vim@v3.2.7/types.ts";
+import { strlen } from "https://deno.land/x/denops_std@v5.0.1/function/mod.ts";
 import {
   ClipboardHistory,
   ClipboardHistoryItem,
 } from "../windows-clipboard-history/clipboard-history.ts";
 import { toDuration } from "../windows-clipboard-history/time.ts";
-import { abortable } from "https://deno.land/std@0.168.0/async/abortable.ts";
 
 type Params = {
   /** PowerShell executable path. (default: "powershell.exe") */
