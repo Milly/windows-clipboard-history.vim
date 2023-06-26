@@ -30,6 +30,10 @@ https://github.com/vim-denops/denops.vim
 https://github.com/Shougo/ddc.vim
 https://github.com/Shougo/ddu.vim
 
+Please enable clipboard-history in Windows settings. You can enable it with
+the following command in Powershell as administrator: >
+	Set-ItemProperty -Path "HKCU:\Software\Microsoft\Clipboard" -Name "EnableClipboardHistory" -Value 1
+<
 
 ==============================================================================
 EXAMPLES				  *windows-clipboard-history-examples*

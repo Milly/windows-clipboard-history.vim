@@ -20,10 +20,23 @@ Windows clipboard history source plugin for ddc.vim and ddu.vim.
 
 ## Windows Settings
 
+### Enable Clipboard History
+
+#### (Option 1) Use Setting GUI
+
 1. Open the Start menu and click settings gear (⚙).
 2. Select the System tab to proceed.
 3. Scroll down on the left pane to select the Clipboard tab in the System menu.
 4. Turn on the switch of the Clipboard history.
+
+#### (Option 2) Use Command Line
+
+1. Start **Powershell** as an administrator.
+2. Run the following command:
+
+```powershell
+Set-ItemProperty -Path "HKCU:\Software\Microsoft\Clipboard" -Name "EnableClipboardHistory" -Value 1
+```
 
 ## Configuration
 
