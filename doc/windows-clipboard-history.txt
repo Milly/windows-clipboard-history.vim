@@ -37,6 +37,8 @@ the following command in Powershell as administrator: >
 
 ==============================================================================
 EXAMPLES				  *windows-clipboard-history-examples*
+
+					*ddc-source-windows-clipboard-history*
 >
 	" ddc.vim
 	call ddc#custom#patch_global('sources', ['windows-clipboard-history'])
@@ -48,7 +50,9 @@ EXAMPLES				  *windows-clipboard-history-examples*
 	      \ windows-clipboard-history: #{
 	      \   maxAbbrWidth: 100,
 	      \ }})
-
+<
+					*ddu-source-windows-clipboard-history*
+>
 	" ddu.vim
 	call ddu#custom#patch_global('sources', [#{
 	      \ name: 'windows-clipboard-history',
