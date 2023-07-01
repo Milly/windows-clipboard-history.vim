@@ -2,11 +2,11 @@ import { abortable } from "https://deno.land/std@0.192.0/async/abortable.ts";
 import type {
   GatherArguments,
   OnInitArguments,
-} from "https://deno.land/x/ddu_vim@v3.2.7/base/source.ts";
+} from "https://deno.land/x/ddu_vim@v3.3.1/base/source.ts";
 import {
   BaseSource,
   type Item as DduItem,
-} from "https://deno.land/x/ddu_vim@v3.2.7/types.ts";
+} from "https://deno.land/x/ddu_vim@v3.3.1/types.ts";
 import { strlen } from "https://deno.land/x/denops_std@v5.0.1/function/mod.ts";
 import {
   ClipboardHistory,
