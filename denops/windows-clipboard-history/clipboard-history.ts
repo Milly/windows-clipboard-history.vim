@@ -91,31 +91,32 @@ export class ClipboardHistory {
       throw new Error("Already process started");
     }
 
-    const command = [
+    const psCommand = [
       `Import-Module @(${
         PS_MODULE_PATHS.map((path) => `"${path}"`).join(", ")
       })`,
       "'[]'", // initial data
       `while ((Read-Host) -eq '') { ${CLIPBOARD_HISTORY_COMMAND} }`,
     ].join(";");
-    const process = Deno.run({
-      cmd: [this.#pwsh, "-NoProfile", "-Command", command],
+    const command = new Deno.Command(this.#pwsh, {
+      args: ["-NoProfile", "-Command", psCommand],
       stdin: "piped",
       stdout: "piped",
       stderr: "inherit",
     });
+    const child = command.spawn();
 
-    const readStream = process.stdout.readable.pipeThrough(
-      new TextDecoderStream(),
-    ).pipeThrough(new JSONDecodeStream());
+    const readStream = child.stdout
+      .pipeThrough(new TextDecoderStream())
+      .pipeThrough(new JSONDecodeStream());
     const reader = readStream.getReader();
 
     const writeStream = new TextEncoderStream();
-    writeStream.readable.pipeTo(process.stdin.writable);
+    writeStream.readable.pipeTo(child.stdin);
     const writer = writeStream.writable.getWriter();
 
-    this.#processInfo = { process, reader, writer };
-    process.status().finally(() => this.#closeProcess());
+    this.#processInfo = { child, reader, writer };
+    child.status.finally(() => this.#closeProcess());
 
     // wait initial data
     await this.#readJSON();
@@ -129,16 +130,15 @@ export class ClipboardHistory {
         Promise.allSettled([
           p.writer.close(),
           p.reader.cancel(),
-          p.process.stdout?.close(),
-          p.process.stdin?.close(),
+          p.child.stdout.cancel(),
+          p.child.stdin.close(),
         ])
       ).catch();
       try {
-        await deadline(p.process.status(), PROCESS_CLOSE_TIMEOUT);
+        await deadline(p.child.status, PROCESS_CLOSE_TIMEOUT);
       } catch (_) {
-        p.process.kill();
+        p.child.kill();
       }
-      p.process.close();
     }
   }
 
@@ -166,7 +166,7 @@ export class ClipboardHistory {
   ): Promise<T> {
     const p = this.#processInfo;
     if (p) {
-      const res = await Promise.race([proc(p), p.process.status()]);
+      const res = await Promise.race([proc(p), p.child.status]);
       if (!isProcessStatus(res)) {
         return res;
       }
@@ -176,14 +176,14 @@ export class ClipboardHistory {
 }
 
 interface PSProcessInfo {
-  process: Deno.Process;
+  child: Deno.ChildProcess;
   reader: ReadableStreamDefaultReader<unknown>;
   writer: WritableStreamDefaultWriter<string>;
 }
 
-function isProcessStatus(obj: unknown): obj is Deno.ProcessStatus {
-  if (typeof obj === "object") {
-    const { success, code } = obj as Deno.ProcessStatus;
+function isProcessStatus(obj: unknown): obj is Deno.CommandStatus {
+  if (obj !== null && typeof obj === "object") {
+    const { success, code } = obj as Deno.CommandStatus;
     return typeof success === "boolean" && typeof code === "number";
   }
   return false;
