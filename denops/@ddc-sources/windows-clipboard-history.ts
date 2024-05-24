@@ -63,10 +63,7 @@ export class Source extends BaseSource<Params, UserData> {
       highlightGroup: ctrlCharHlGroup,
       callbackId: `source/${this.name}`,
     });
-    await Promise.all([
-      this.#clipboardHistory.waitInitialized(),
-      this.#unprintable.onInit(args),
-    ]);
+    await this.#unprintable.onInit(args);
   }
 
   override async gather(

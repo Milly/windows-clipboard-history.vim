@@ -1,4 +1,3 @@
-import { deadline, deferred } from "https://deno.land/std@0.192.0/async/mod.ts";
 import * as path from "https://deno.land/std@0.192.0/path/mod.ts";
 import { JSONDecodeStream } from "./json.ts";
 
@@ -12,14 +11,14 @@ const PS_MODULE_PATHS = [
 ];
 const CLIPBOARD_HISTORY_COMMAND =
   "ConvertTo-SafeEncodeJson @(Get-ClipboardHistory) -Compress";
-const PROCESS_INITIALIZE_MAX_RETRY_COUNT = 1;
-const PROCESS_CLOSE_TIMEOUT = 500;
 
 export type ClipboardHistoryOptions = {
   /** PowerShell executable path. (default: "powershell.exe") */
   pwsh?: string;
   /** Cache expires interval. (default: 3000 [msec]) */
   cacheExpires?: number;
+  /** Signal for dispose object. */
+  signal?: AbortSignal;
 };
 
 export type ClipboardHistoryItem = {
@@ -28,163 +27,126 @@ export type ClipboardHistoryItem = {
   Time: number;
 };
 
-export class ClipboardHistory {
-  #initialized;
-  #pwsh: string;
-  #cacheExpires: number;
-  #processInfo: PSProcessInfo | undefined;
-  #lastHistory: ClipboardHistoryItem[] | undefined;
-  #lastCachedTime: number;
+type HistoryCache = {
+  updated: number;
+  history: ClipboardHistoryItem[];
+};
+
+type Runner = {
+  getHistory(): Promise<HistoryCache>;
+  cache: HistoryCache;
+};
+
+export class ClipboardHistory implements AsyncDisposable {
+  #aborter = new AbortController();
+  #opts: Required<ClipboardHistoryOptions>;
+  #runner: Promise<Runner>;
+  #getter?: Promise<HistoryCache>;
 
   constructor(opts: ClipboardHistoryOptions = {}) {
-    this.#pwsh = opts.pwsh ?? DEFAULT_PWSH_EXECUTABLE;
-    this.#cacheExpires = opts.cacheExpires ?? DEFAULT_CACHE_EXPIRES;
-    this.#lastCachedTime = 0;
-    this.#initialized = deferred<void>();
-    this.#initialized.resolve(this.#tryWaitInitProcess());
+    const {
+      pwsh = DEFAULT_PWSH_EXECUTABLE,
+      cacheExpires = DEFAULT_CACHE_EXPIRES,
+    } = opts;
+    const { signal } = this.#aborter;
+    this.#opts = {
+      pwsh,
+      cacheExpires,
+      signal: opts.signal ? AbortSignal.any([signal, opts.signal]) : signal,
+    };
+    this.#runner = this.#initRunner();
+    this.#runner.catch(() => {
+      // Prevent unhandled rejection.
+    });
   }
 
-  dispose(): Promise<void> {
-    if (this.#initialized.state !== "pending") {
-      this.#initialized = deferred<void>();
+  async [Symbol.asyncDispose](): Promise<void> {
+    if (!this.#opts.signal.aborted) {
+      this.#aborter.abort(new TypeError("ClipboardHistory disposed"));
     }
-    this.#initialized.reject(new Error("Object disposed"));
-    return this.#closeProcess();
-  }
-
-  async waitInitialized(): Promise<void> {
-    return await this.#initialized;
+    try {
+      await this.#runner;
+    } catch (e) {
+      if (e !== this.#opts.signal) {
+        throw e;
+      }
+    }
   }
 
   async getHistory(): Promise<ClipboardHistoryItem[]> {
-    const now = Date.now();
-    if (
-      !this.#lastHistory || (now - this.#lastCachedTime) >= this.#cacheExpires
-    ) {
-      if (this.#initialized.state === "rejected") {
-        await this.#tryWaitInitProcess();
-        this.#initialized.resolve();
-      } else {
-        await this.#initialized;
-      }
-      await this.#writeCommand("\n");
-      this.#lastHistory = await this.#readJSON();
-      this.#lastCachedTime = now;
+    const runner = await this.#runner;
+    const age = Date.now() - runner.cache.updated;
+    if (age >= this.#opts.cacheExpires) {
+      this.#getter ??= runner.getHistory();
+      runner.cache = await this.#getter;
+      this.#getter = undefined;
     }
-    return this.#lastHistory.map((h) => ({ ...h })); // deep cloned
+    return runner.cache.history.map((h) => ({ ...h })); // deep cloned
   }
 
-  async #tryWaitInitProcess(): Promise<void> {
-    for (let count = 0;; ++count) {
-      try {
-        return await this.#initProcess();
-      } catch (e: unknown) {
-        if (count >= PROCESS_INITIALIZE_MAX_RETRY_COUNT) {
-          throw e;
-        }
-      }
-    }
-  }
-
-  async #initProcess(): Promise<void> {
-    if (this.#processInfo) {
-      throw new Error("Already process started");
-    }
+  async #initRunner(): Promise<Runner> {
+    const { pwsh, signal } = this.#opts;
 
     const psCommand = [
       `Import-Module @(${
         PS_MODULE_PATHS.map((path) => `"${path}"`).join(", ")
       })`,
-      "'[]'", // initial data
       `while ((Read-Host) -eq '') { ${CLIPBOARD_HISTORY_COMMAND} }`,
     ].join(";");
-    const command = new Deno.Command(this.#pwsh, {
+    const command = new Deno.Command(pwsh, {
       args: ["-NoProfile", "-Command", psCommand],
       stdin: "piped",
       stdout: "piped",
       stderr: "inherit",
+      signal,
     });
     const child = command.spawn();
 
-    const readStream = child.stdout
-      .pipeThrough(new TextDecoderStream())
-      .pipeThrough(new JSONDecodeStream());
-    const reader = readStream.getReader();
+    const reader = child.stdout
+      .pipeThrough(new TextDecoderStream(), { signal })
+      .pipeThrough(new JSONDecodeStream())
+      .getReader();
 
     const writeStream = new TextEncoderStream();
-    writeStream.readable.pipeTo(child.stdin);
+    writeStream.readable.pipeTo(child.stdin, { signal });
     const writer = writeStream.writable.getWriter();
 
-    this.#processInfo = { child, reader, writer };
-    child.status.finally(() => this.#closeProcess());
+    const getHistory = async (): Promise<HistoryCache> => {
+      const [, history] = await Promise.all([
+        this.#writeCommand(writer, "\n"),
+        this.#readResult(reader),
+      ]);
+      return { history, updated: Date.now() };
+    };
 
     // wait initial data
-    await this.#readJSON();
-  }
-
-  async #closeProcess(): Promise<void> {
-    const p = this.#processInfo;
-    this.#processInfo = undefined;
-    if (p) {
-      await this.#writeCommand("exit\n").finally(() =>
-        Promise.allSettled([
-          p.writer.close(),
-          p.reader.cancel(),
-          p.child.stdout.cancel(),
-          p.child.stdin.close(),
-        ])
-      ).catch();
-      try {
-        await deadline(p.child.status, PROCESS_CLOSE_TIMEOUT);
-      } catch (_) {
-        p.child.kill();
-      }
+    try {
+      const cache = await getHistory();
+      return { getHistory, cache };
+    } catch (e) {
+      this.#aborter.abort(e);
+      throw e;
     }
   }
 
-  async #writeCommand(command: string): Promise<void> {
-    await this.#withProcess(async (p) => {
-      await p.writer.ready;
-      await p.writer.write(command);
-      await p.writer.ready;
-    });
+  async #writeCommand(
+    writer: WritableStreamDefaultWriter<string>,
+    command: string,
+  ): Promise<void> {
+    await writer.ready;
+    await writer.write(command);
   }
 
-  async #readJSON(): Promise<ClipboardHistoryItem[]> {
-    const { done, value } = await this.#withProcess((p) => p.reader.read());
+  async #readResult(
+    reader: ReadableStreamDefaultReader<unknown>,
+  ): Promise<ClipboardHistoryItem[]> {
+    const { done, value } = await reader.read();
     if (done) {
-      throw new Error("Unexpected stream EOF");
+      throw new TypeError("Unexpected stream EOF");
     }
     if (!Array.isArray(value)) {
-      throw new Error(`Invalid result: ${value}`);
+      throw new TypeError(`Invalid result: ${value}`);
     }
     return value;
   }
-
-  async #withProcess<T = unknown>(
-    proc: (p: PSProcessInfo) => Promise<T> | T,
-  ): Promise<T> {
-    const p = this.#processInfo;
-    if (p) {
-      const res = await Promise.race([proc(p), p.child.status]);
-      if (!isProcessStatus(res)) {
-        return res;
-      }
-    }
-    throw new Error("Process not exist");
-  }
-}
-
-interface PSProcessInfo {
-  child: Deno.ChildProcess;
-  reader: ReadableStreamDefaultReader<unknown>;
-  writer: WritableStreamDefaultWriter<string>;
-}
-
-function isProcessStatus(obj: unknown): obj is Deno.CommandStatus {
-  if (obj !== null && typeof obj === "object") {
-    const { success, code } = obj as Deno.CommandStatus;
-    return typeof success === "boolean" && typeof code === "number";
-  }
-  return false;
 }

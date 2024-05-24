@@ -37,7 +37,7 @@ type Item = DduItem<ActionData>;
 
 export class Source extends BaseSource<Params, ActionData> {
   kind = "word";
-  #clipboardHistory: ClipboardHistory | undefined;
+  #clipboardHistory?: ClipboardHistory;
 
   override params(): Params {
     return {
@@ -48,10 +48,10 @@ export class Source extends BaseSource<Params, ActionData> {
     };
   }
 
+  // deno-lint-ignore require-await
   override async onInit(args: OnInitArguments<Params>): Promise<void> {
     const { sourceParams: { pwsh, cacheExpires } } = args;
     this.#clipboardHistory = new ClipboardHistory({ pwsh, cacheExpires });
-    await this.#clipboardHistory.waitInitialized();
   }
 
   override gather(
