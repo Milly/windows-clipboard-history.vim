@@ -1,13 +1,13 @@
-import { abortable } from "https://deno.land/std@0.192.0/async/abortable.ts";
+import { abortable } from "https://deno.land/std@0.224.0/async/abortable.ts";
 import type {
   GatherArguments,
   OnInitArguments,
-} from "https://deno.land/x/ddu_vim@v3.3.1/base/source.ts";
+} from "https://deno.land/x/ddu_vim@v4.1.0/base/source.ts";
 import {
   BaseSource,
   type Item as DduItem,
-} from "https://deno.land/x/ddu_vim@v3.3.1/types.ts";
-import { strlen } from "https://deno.land/x/denops_std@v5.0.1/function/mod.ts";
+} from "https://deno.land/x/ddu_vim@v4.1.0/types.ts";
+import { strlen } from "https://deno.land/x/denops_std@v6.5.0/function/mod.ts";
 import {
   ClipboardHistory,
   ClipboardHistoryItem,

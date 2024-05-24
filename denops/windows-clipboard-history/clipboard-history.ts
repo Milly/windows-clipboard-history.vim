@@ -1,4 +1,4 @@
-import * as path from "https://deno.land/std@0.192.0/path/mod.ts";
+import * as path from "https://deno.land/std@0.224.0/path/mod.ts";
 import { JSONDecodeStream } from "./json.ts";
 
 const __dirname = path.dirname(path.fromFileUrl(import.meta.url));
