@@ -85,6 +85,8 @@ export class Source extends BaseSource<Params, ActionData> {
         ),
       ]);
 
+      if (signal.aborted) return;
+
       const items = this.#generateItems(
         recentHistory,
         prefixWidth,
