@@ -1,4 +1,4 @@
-import { assertEquals } from "https://deno.land/std@0.224.0/testing/asserts.ts";
+import { assertEquals } from "jsr:@std/assert@^1.0.0/equals";
 import { toDuration } from "./time.ts";
 
 Deno.test("[time] toDuration", async (t) => {
