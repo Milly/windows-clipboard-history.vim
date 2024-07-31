@@ -1,4 +1,4 @@
-import * as path from "https://deno.land/std@0.192.0/path/mod.ts";
+import * as path from "jsr:@std/path@^0.225.2";
 import { JSONDecodeStream } from "./json.ts";
 
 const __dirname = path.dirname(path.fromFileUrl(import.meta.url));
@@ -106,6 +106,17 @@ export class ClipboardHistory implements AsyncDisposable {
       .pipeThrough(new TextDecoderStream(), { signal })
       .pipeThrough(new JSONDecodeStream())
       .getReader();
+
+    // child.stderr
+    //   .pipeThrough(new TextDecoderStream())
+    //   .pipeTo(new WritableStream({
+    //     write(chunk) {
+    //       console.error(chunk);
+    //     },
+    //   }))
+    //   .catch((e) => {
+    //     console.error(e);
+    //   });
 
     const writeStream = new TextEncoderStream();
     writeStream.readable.pipeTo(child.stdin, { signal });

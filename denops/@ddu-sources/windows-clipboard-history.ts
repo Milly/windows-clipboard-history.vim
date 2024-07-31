@@ -1,13 +1,11 @@
-import { abortable } from "https://deno.land/std@0.192.0/async/abortable.ts";
-import type {
-  GatherArguments,
-  OnInitArguments,
-} from "https://deno.land/x/ddu_vim@v3.3.1/base/source.ts";
+import { abortable } from "jsr:@std/async@^1.0.0/abortable";
 import {
   BaseSource,
-  type Item as DduItem,
-} from "https://deno.land/x/ddu_vim@v3.3.1/types.ts";
-import { strlen } from "https://deno.land/x/denops_std@v5.0.1/function/mod.ts";
+  type GatherArguments,
+  type OnInitArguments,
+} from "jsr:@shougo/ddu-vim@^5.0.0/source";
+import type { Item as DduItem } from "jsr:@shougo/ddu-vim@^5.0.0/types";
+import { strlen } from "jsr:@denops/std@^7.0.0/function";
 import {
   ClipboardHistory,
   ClipboardHistoryItem,
@@ -86,6 +84,8 @@ export class Source extends BaseSource<Params, ActionData> {
           (history) => history.slice(0, Math.max(1, maxItems)),
         ),
       ]);
+
+      if (signal.aborted) return;
 
       const items = this.#generateItems(
         recentHistory,

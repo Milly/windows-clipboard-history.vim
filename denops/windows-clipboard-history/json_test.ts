@@ -1,4 +1,4 @@
-import { assertEquals } from "https://deno.land/std@0.192.0/testing/asserts.ts";
+import { assertEquals } from "jsr:@std/assert@^1.0.0/equals";
 import { JSONDecodeStream } from "./json.ts";
 
 Deno.test("[json] JSONDecodeStream", async (t) => {
