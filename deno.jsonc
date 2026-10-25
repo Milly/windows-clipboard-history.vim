@@ -1,8 +1,16 @@
 {
   "lock": false,
-  "lint": {
-    "rules": {
-      "exclude": ["no-import-prefix", "no-unversioned-import"]
-    }
+  "workspace": [
+    "./denops/windows-clipboard-history",
+    "./denops/@ddc-sources/windows-clipboard-history",
+    "./denops/@ddu-sources/windows-clipboard-history"
+  ],
+  "tasks": {
+    "cache": "deno install --reload",
+    "check": "deno task --cwd denops/windows-clipboard-history check && deno task --cwd denops/@ddc-sources/windows-clipboard-history check && deno task --cwd denops/@ddu-sources/windows-clipboard-history check",
+    "fmt": "deno task --cwd denops/windows-clipboard-history fmt && deno task --cwd denops/@ddc-sources/windows-clipboard-history fmt && deno task --cwd denops/@ddu-sources/windows-clipboard-history fmt",
+    "lint": "deno task --cwd denops/windows-clipboard-history lint && deno task --cwd denops/@ddc-sources/windows-clipboard-history lint && deno task --cwd denops/@ddu-sources/windows-clipboard-history lint",
+    "lint-fix": "deno task --cwd denops/windows-clipboard-history lint-fix && deno task --cwd denops/@ddc-sources/windows-clipboard-history lint-fix && deno task --cwd denops/@ddu-sources/windows-clipboard-history lint-fix",
+    "test": "deno task --cwd denops/windows-clipboard-history test"
   }
 }

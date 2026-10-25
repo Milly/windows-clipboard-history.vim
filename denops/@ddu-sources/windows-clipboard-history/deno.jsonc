@@ -1,0 +1,15 @@
+{
+  "imports": {
+    "@denops/std": "jsr:@denops/std@~8.2.0",
+    "@milly/windows-clipboard-history": "../../windows-clipboard-history",
+    "@shougo/ddu-vim": "jsr:@shougo/ddu-vim@~11.3.0",
+    "@std/async": "jsr:@std/async@~1.5.1"
+  },
+  "tasks": {
+    "cache": "deno install --reload",
+    "check": "deno check **/*.ts && deno fmt --check **/*.ts && deno lint",
+    "fmt": "deno fmt **/*.ts",
+    "lint": "deno lint",
+    "lint-fix": "deno lint --fix"
+  }
+}

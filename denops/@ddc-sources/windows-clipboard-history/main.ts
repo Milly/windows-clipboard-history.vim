@@ -1,21 +1,18 @@
-import type { Denops } from "jsr:@denops/core@~8.0.1";
+import type { Denops } from "@denops/core";
 import {
   BaseSource,
   type GatherArguments,
   type OnCompleteDoneArguments,
   type OnInitArguments,
-} from "jsr:@shougo/ddc-vim@~10.3.0/source";
-import type { Item as DdcItem } from "jsr:@shougo/ddc-vim@~10.3.0/types";
-import { globalOptions } from "jsr:@denops/std@~8.2.0/variable";
-import {
-  Unprintable,
-  type UnprintableUserData,
-} from "jsr:@milly/ddc-unprintable@~6.0.0";
+} from "@shougo/ddc-vim/source";
+import type { Item as DdcItem } from "@shougo/ddc-vim/types";
+import { globalOptions } from "@denops/std/variable";
+import { Unprintable, type UnprintableUserData } from "@milly/ddc-unprintable";
 import {
   ClipboardHistory,
-  ClipboardHistoryItem,
-} from "../windows-clipboard-history/clipboard-history.ts";
-import { toDuration } from "../windows-clipboard-history/time.ts";
+  type ClipboardHistoryItem,
+} from "@milly/windows-clipboard-history/clipboard-history";
+import { toDuration } from "@milly/windows-clipboard-history/time";
 
 type Params = {
   /** PowerShell executable path. (default: "powershell.exe") */

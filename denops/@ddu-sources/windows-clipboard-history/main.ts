@@ -1,16 +1,16 @@
-import { abortable } from "jsr:@std/async@~1.5.1/abortable";
+import { abortable } from "@std/async/abortable";
 import {
   BaseSource,
   type GatherArguments,
   type OnInitArguments,
-} from "jsr:@shougo/ddu-vim@~11.3.0/source";
-import type { Item as DduItem } from "jsr:@shougo/ddu-vim@~11.3.0/types";
-import { strlen } from "jsr:@denops/std@~8.2.0/function";
+} from "@shougo/ddu-vim/source";
+import type { Item as DduItem } from "@shougo/ddu-vim/types";
+import { strlen } from "@denops/std/function";
 import {
   ClipboardHistory,
-  ClipboardHistoryItem,
-} from "../windows-clipboard-history/clipboard-history.ts";
-import { toDuration } from "../windows-clipboard-history/time.ts";
+  type ClipboardHistoryItem,
+} from "@milly/windows-clipboard-history/clipboard-history";
+import { toDuration } from "@milly/windows-clipboard-history/time";
 
 type Params = {
   /** PowerShell executable path. (default: "powershell.exe") */
