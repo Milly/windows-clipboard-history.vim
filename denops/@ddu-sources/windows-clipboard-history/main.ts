@@ -11,20 +11,7 @@ import {
   type ClipboardHistoryItem,
 } from "@milly/windows-clipboard-history/clipboard-history";
 import { toDuration } from "@milly/windows-clipboard-history/time";
-
-type Params = {
-  /** PowerShell executable path. (default: "powershell.exe") */
-  pwsh: string;
-  /** Cache expires interval. (default: 3000 [msec]) */
-  cacheExpires: number;
-  /** Highlight group name for header. (default: "Special")
-   *
-   * If empty, highlight is disabled.
-   */
-  headerHlGroup: string;
-  /** Prefix for displayed items. (default: "") */
-  prefix: string;
-};
+import type { Params } from "./params.ts";
 
 type ActionData = {
   text: string;

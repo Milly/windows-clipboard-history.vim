@@ -1,4 +1,8 @@
 {
+  "name": "@milly/ddc-source-windows-clipboard-history",
+  "exports": {
+    ".": "./params.ts"
+  },
   "imports": {
     "@denops/core": "jsr:@denops/core@~8.0.1",
     "@denops/std": "jsr:@denops/std@~8.2.0",

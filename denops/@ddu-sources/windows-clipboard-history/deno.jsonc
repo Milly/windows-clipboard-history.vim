@@ -1,4 +1,8 @@
 {
+  "name": "@milly/ddu-source-windows-clipboard-history",
+  "exports": {
+    ".": "./params.ts"
+  },
   "imports": {
     "@denops/std": "jsr:@denops/std@~8.2.0",
     "@milly/windows-clipboard-history": "../../windows-clipboard-history",
