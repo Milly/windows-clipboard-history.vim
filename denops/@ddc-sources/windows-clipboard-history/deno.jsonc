@@ -7,7 +7,6 @@
     "@denops/core": "jsr:@denops/core@~8.0.1",
     "@denops/std": "jsr:@denops/std@~8.2.0",
     "@milly/ddc-unprintable": "jsr:@milly/ddc-unprintable@~6.0.0",
-    "@milly/windows-clipboard-history": "../../windows-clipboard-history",
     "@shougo/ddc-vim": "jsr:@shougo/ddc-vim@~10.3.0"
   },
   "tasks": {

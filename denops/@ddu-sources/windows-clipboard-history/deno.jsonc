@@ -5,7 +5,6 @@
   },
   "imports": {
     "@denops/std": "jsr:@denops/std@~8.2.0",
-    "@milly/windows-clipboard-history": "../../windows-clipboard-history",
     "@shougo/ddu-vim": "jsr:@shougo/ddu-vim@~11.3.0",
     "@std/async": "jsr:@std/async@~1.5.1"
   },

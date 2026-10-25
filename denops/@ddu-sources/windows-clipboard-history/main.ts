@@ -9,8 +9,8 @@ import { strlen } from "@denops/std/function";
 import {
   ClipboardHistory,
   type ClipboardHistoryItem,
-} from "@milly/windows-clipboard-history/clipboard-history";
-import { toDuration } from "@milly/windows-clipboard-history/time";
+} from "../../windows-clipboard-history/clipboard-history.ts";
+import { toDuration } from "../../windows-clipboard-history/time.ts";
 import type { Params } from "./params.ts";
 
 type ActionData = {
