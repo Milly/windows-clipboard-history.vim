@@ -21,12 +21,13 @@ jobs:
         runner:
           - ubuntu-latest
         deno_version:
-          - "1.45.x"
+          - "2.3.0"
+          - "2.x"
     runs-on: ${{ matrix.runner }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: denoland/setup-deno@v1
+      - uses: denoland/setup-deno@v2
         with:
           deno-version: "${{ matrix.deno_version }}"
 

@@ -1,4 +1,4 @@
-import * as path from "jsr:@std/path@^0.225.2";
+import * as path from "jsr:@std/path@~1.1.6";
 import { JSONDecodeStream } from "./json.ts";
 
 const __dirname = path.dirname(path.fromFileUrl(import.meta.url));

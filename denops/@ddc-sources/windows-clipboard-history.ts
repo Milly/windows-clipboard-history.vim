@@ -1,16 +1,16 @@
-import type { Denops } from "jsr:@denops/core@^7.0.0";
+import type { Denops } from "jsr:@denops/core@~8.0.1";
 import {
   BaseSource,
   type GatherArguments,
   type OnCompleteDoneArguments,
   type OnInitArguments,
-} from "jsr:@shougo/ddc-vim@^6.0.0/source";
-import type { Item as DdcItem } from "jsr:@shougo/ddc-vim@^6.0.0/types";
-import { globalOptions } from "jsr:@denops/std@^7.0.0/variable";
+} from "jsr:@shougo/ddc-vim@~10.3.0/source";
+import type { Item as DdcItem } from "jsr:@shougo/ddc-vim@~10.3.0/types";
+import { globalOptions } from "jsr:@denops/std@~8.2.0/variable";
 import {
   Unprintable,
   type UnprintableUserData,
-} from "jsr:@milly/ddc-unprintable@^4.0.0";
+} from "jsr:@milly/ddc-unprintable@~6.0.0";
 import {
   ClipboardHistory,
   ClipboardHistoryItem,

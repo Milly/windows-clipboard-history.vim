@@ -1,11 +1,11 @@
-import { abortable } from "jsr:@std/async@^1.0.0/abortable";
+import { abortable } from "jsr:@std/async@~1.5.1/abortable";
 import {
   BaseSource,
   type GatherArguments,
   type OnInitArguments,
-} from "jsr:@shougo/ddu-vim@^5.0.0/source";
-import type { Item as DduItem } from "jsr:@shougo/ddu-vim@^5.0.0/types";
-import { strlen } from "jsr:@denops/std@^7.0.0/function";
+} from "jsr:@shougo/ddu-vim@~11.3.0/source";
+import type { Item as DduItem } from "jsr:@shougo/ddu-vim@~11.3.0/types";
+import { strlen } from "jsr:@denops/std@~8.2.0/function";
 import {
   ClipboardHistory,
   ClipboardHistoryItem,
@@ -34,7 +34,7 @@ type ActionData = {
 type Item = DduItem<ActionData>;
 
 export class Source extends BaseSource<Params, ActionData> {
-  kind = "word";
+  override kind = "word";
   #clipboardHistory?: ClipboardHistory;
 
   override params(): Params {
